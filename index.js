@@ -3,7 +3,7 @@ var TelegramBot = require('node-telegram-bot-api'),
 
 var token = process.env.FBOT_TOKEN;
 // Setup polling way
-var bot = new TelegramBot(token, {polling: true});
+var bot = new TelegramBot(token, {polling: { interval: 2000, timeout: 65}});
 
 // Matches /echo [whatever]
 bot.onText(/\/echo (.+)/, function (msg, match) {
@@ -16,6 +16,10 @@ bot.onText(/\/standings/, function(msg, match) {
   getStandingMessage(function(message) {
     bot.sendMessage(msg.from.id, message, {parse_mode: "Markdown"});
   });
+});
+
+bot.onText(/\/mak/, function(msg, match) {
+  bot.sendMessage(msg.from.id, "Мак – дно, МЮ чемпион");
 });
 
 function getStandingMessage(callback) {
