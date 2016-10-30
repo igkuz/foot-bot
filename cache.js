@@ -26,10 +26,11 @@ class BotCache {
   };
 
   setCacheIfNotExists(cache_key, urlForRequest) {
+    var obj = this;
     this.client.exists(cache_key, function(err, reply) {
       if (reply != 1) {
-        this.getData(urlForRequest, function(body) {
-          this.client.set(cache_key, body);
+        obj.getData(urlForRequest, function(body) {
+          obj.client.set(cache_key, body);
         });
       }
     });
@@ -54,15 +55,14 @@ class BotCache {
   };
 
   getStandings(callback) {
+    var bc=this;
     this.client.get(this.standings_key, function(err, reply) {
       if (reply != null) {
         callback(reply);
       } else {
-        this.getData(this.buildStandingsUrl(), function(err, resp, body) {
-          if (!err && resp.statusCode == 200) {
-            this.client.set(this.standings_key, body);
-            callback(body);
-          }
+        bc.getData(bc.buildStandingsUrl(), function(body) {
+          bc.client.set(bc.standings_key, body);
+          callback(body);
         });
       }
     });
