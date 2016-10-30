@@ -3,6 +3,8 @@ var TelegramBot = require('node-telegram-bot-api'),
     BotFormatter = require('./formatter.js'),
     BotCache = require('./cache.js');
 
+const MARKDOWN = "Markdown";
+
 var token = process.env.FBOT_TOKEN;
 // Setup polling way
 var bot = new TelegramBot(token, {polling: { interval: 2000, timeout: 65}});
@@ -18,8 +20,15 @@ bot.onText(/\/echo (.+)/, function (msg, match) {
 
 bot.onText(/\/standings/, function(msg, match) {
   bc.getStandings(function(body) {
-    message = bf.formatStandings(JSON.parse(body)["data"]["standings"]);
-    bot.sendMessage(msg.from.id, message, {parse_mode: "Markdown"});
+    var message = bf.formatStandings(JSON.parse(body)["data"]["standings"]);
+    bot.sendMessage(msg.from.id, message, {parse_mode: MARKDOWN});
+  });
+});
+
+bot.onText(/\/currentRound/, function(msg, match) {
+  bc.getCurrentRound(function(body) {
+    var message = bf.formatRound(JSON.parse(body).data.rounds[0].matches)
+    bot.sendMessage(msg.from.id, message, {parse_mode: MARKDOWN});
   });
 });
 

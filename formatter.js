@@ -29,14 +29,15 @@ class BotFormatter {
   };
 
   formatRound(matches) {
-    var message = "";
+    var message = "```text\n";
     var maxLength = matches.reduce(function(a, b) { 
       return (a.home_team.length + a.away_team.length + 3) > (b.home_team.length + b.away_team.length + 3) ?
         a : b;
     });
-    for (i = 0; i < matches.length; i++) {
-      var el = matches[i];
-      message += i + "\t";
+    for (var i = 0; i < matches.length; i++) {
+      var el = matches[i],
+          number = i + 1;
+      message += number + "\t";
       message += el.home_team + " - " + el.away_team + "\t";
       if (el.played == 1) {
         message += el.match_result + "\t";
@@ -44,8 +45,9 @@ class BotFormatter {
       message += " ".repeat(
           (maxLength.away_team.length + maxLength.home_team.length - el.away_team.length - el.home_team.length)
       );
-      message += moment(el.match_date).tz(TZONE).format("Do MMM YY HH:mm") + "\n";
+      message += moment(el.date_match).tz(TZONE).format("Do MMM YY HH:mm") + "\n";
     };
+    message += "```";
 
     return message;
   };

@@ -1,8 +1,11 @@
 const Redis = require('redis');
 const Request = require('request');
+var moment = require('moment'),
+    tz = require('moment-timezone');
 
 const SOCCER_API_URL = "http://soccer.sportsopendata.net/v1/",
-      LEAGUE = "premier-league";
+      LEAGUE = "premier-league",
+      TZONE = "Europe/Moscow";
 
 class BotCache {
 
@@ -54,8 +57,14 @@ class BotCache {
       LEAGUE + "/seasons/16-17/standings";
   };
 
+  buildRoundUrl(roundSlug) {
+    return SOCCER_API_URL + "leagues/" +
+      LEAGUE + "/seasons/16-17/rounds/" +
+      roundSlug;
+  };
+
   getStandings(callback) {
-    var bc=this;
+    var bc = this;
     this.client.get(this.standings_key, function(err, reply) {
       if (reply != null) {
         callback(reply);
@@ -68,6 +77,43 @@ class BotCache {
     });
   };
 
+  getCurrentRound(callback) {
+    var bc = this;
+    this.getRounds(function(body) {
+      var roundSlug = bc.getCurrentRoundSlug(JSON.parse(body).data.rounds)
+      bc.getData(bc.buildRoundUrl(roundSlug), function(body) {
+        callback(body);
+      });
+    });
+  };
+
+  getRounds(callback) {
+    var bc = this;
+    this.client.get(this.rounds_key, function(err, reply) {
+      if (reply != null) {
+        callback(reply);
+      } else {
+        bc.getData(bc.buildRoundsUrl(), function(body) {
+          bc.client.set(bc.rounds_key, body);
+          callback(body);
+        });
+      }
+    });
+  };
+  
+  getCurrentRoundSlug(rounds) {
+    for (var i = 0; i < rounds.length; i++) {
+      var el = rounds[i];
+      var startDate = moment(el.start_date).tz(TZONE),
+          endDate = moment(el.end_date).tz(TZONE),
+          now = moment().tz(TZONE);
+      if ( now > endDate ) { continue; }
+      if ( (now >= startDate || now <= startDate) && now <= endDate ) {
+        return el.round_slug;
+      }
+    }
+  };
 };
+
 
 module.exports = BotCache;
