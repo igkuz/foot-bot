@@ -1,3 +1,7 @@
+const moment = require('moment');
+const tz = require('moment-timezone');
+const TZONE = "Europe/Moscow";
+
 class BotFormatter {
   constructor() {};
 
@@ -21,6 +25,28 @@ class BotFormatter {
     });
     message += "```";
     
+    return message;
+  };
+
+  formatRound(matches) {
+    var message = "";
+    var maxLength = matches.reduce(function(a, b) { 
+      return (a.home_team.length + a.away_team.length + 3) > (b.home_team.length + b.away_team.length + 3) ?
+        a : b;
+    });
+    for (i = 0; i < matches.length; i++) {
+      var el = matches[i];
+      message += i + "\t";
+      message += el.home_team + " - " + el.away_team + "\t";
+      if (el.played == 1) {
+        message += el.match_result + "\t";
+      };
+      message += " ".repeat(
+          (maxLength.away_team.length + maxLength.home_team.length - el.away_team.length - el.home_team.length)
+      );
+      message += moment(el.match_date).tz(TZONE).format("Do MMM YY HH:mm") + "\n";
+    };
+
     return message;
   };
 
