@@ -80,7 +80,17 @@ class BotCache {
   getCurrentRound(callback) {
     var bc = this;
     this.getRounds(function(body) {
-      var roundSlug = bc.getCurrentRoundSlug(JSON.parse(body).data.rounds)
+      var roundSlug = bc.getCurrentRoundSlug(JSON.parse(body).data.rounds);
+      bc.getData(bc.buildRoundUrl(roundSlug), function(body) {
+        callback(body);
+      });
+    });
+  };
+
+  getPreviousRound(callback) {
+    var bc = this;
+    this.getRounds(function(body) {
+      var roundSlug = bc.getPreviousRoundSlug(JSON.parse(body).data.rounds);
       bc.getData(bc.buildRoundUrl(roundSlug), function(body) {
         callback(body);
       });
@@ -100,7 +110,20 @@ class BotCache {
       }
     });
   };
-  
+
+  getPreviousRoundSlug(rounds) {
+    for (var i = 0; i < rounds.length; i++) {
+      var el = rounds[i];
+      var startDate = moment(el.start_date).tz(TZONE),
+          endDate = moment(el.end_date).tz(TZONE),
+          now = moment().tz(TZONE);
+      if ( now > endDate ) { continue; }
+      if ( (now >= startDate || now <= startDate) && now <= endDate ) {
+        return rounds[i-1].round_slug;
+      }
+    }
+  };
+
   getCurrentRoundSlug(rounds) {
     for (var i = 0; i < rounds.length; i++) {
       var el = rounds[i];

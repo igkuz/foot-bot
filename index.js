@@ -32,6 +32,13 @@ bot.onText(/\/currentRound/, function(msg, match) {
   });
 });
 
+bot.onText(/\/prevRound/, function(msg, match) {
+  bc.getPreviousRound(function(body) {
+    var message = bf.formatRound(JSON.parse(body).data.rounds[0].matches);
+    bot.sendMessage(msg.from.id, message, {parse_mode: MARKDOWN});
+  });
+});
+
 bot.onText(/\/mak/, function(msg, match) {
   bot.sendMessage(msg.from.id, "Мак – дно, МЮ чемпион");
 });
